@@ -1,12 +1,15 @@
 import merge from "deepmerge";
 import * as NavigationBar from "expo-navigation-bar";
+import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
-import { Appearance, StyleSheet, Text, useColorScheme, View } from "react-native";
-import { Button, MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
-import Fab from "./components/Fab";
+import { Appearance, StyleSheet, useColorScheme, View } from "react-native";
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
+
+import MemoMenu from "./components/MemoInputMenu";
 import Colors from "./constants/Colors";
+import { AppProvider } from "./Context";
 
 const CombinedLightTheme = merge(MD3LightTheme, { colors: Colors.light });
 const CombinedDarkTheme = merge(MD3DarkTheme, { colors: Colors.dark });
@@ -37,6 +40,18 @@ export default function App() {
     setNavBarTransparent();
   }, [theme]);
 
+  useEffect(() => {
+    const requestNotificationPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        console.warn("Notification permissions not granted!");
+        // You might want to show an alert to the user explaining they need to enable permissions in settings
+      }
+    };
+
+    requestNotificationPermissions();
+  }, []); // Run once on mount
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -48,12 +63,12 @@ export default function App() {
 
   return (
     <PaperProvider theme={theme}>
-      <View style={styles.container}>
-        <Text>Open up App.tsx to start working on your appp!</Text>
-        <Button mode="contained">This is new</Button>
-        <Fab />
-        <StatusBar style="auto" />
-      </View>
+      <AppProvider>
+        <View style={styles.container}>
+          <MemoMenu />
+          <StatusBar style="auto" />
+        </View>
+      </AppProvider>
     </PaperProvider>
   );
 }
